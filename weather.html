@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8">
+		<title>도시별 기온</title>
+		
+		<!-- ajax call을 위해 jQuery 사용 -->
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>		
+		<!-- Highchart 사용 -->
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+			
+		<script type="text/javascript">
+		// 페이지 로딩 후
+		$(function () {
+			// 이벤트 정의
+			initEvent();
+			// 챠트 생성
+			initChart();
+		});
+		
+		// 이벤트 정의
+		function initEvent() {
+			// 조회 버튼을 눌렀을 시
+			$('#searchBtn').on('click', function () {
+				// 선택한 도시
+				const latLon = $('#citySelect').val();
+
+				if (!latLon || latLon.length === 0) {
+					alert("도시를 선택해주세요.");
+					return;
+				}
+				
+				const [lat, lon] = latLon.split(",");
+				
+				// API 요청(날씨 정보)
+				$.ajax({
+					url: 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&appid=190f5114ba2c3bfb39347ef2ab24daf2',
+					method: 'GET',
+//					contentType: 'application/json',
+					success: function (response) {
+//						$('#result').html('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+					},
+					error: function (xhr, status, error) {
+//						$('#result').text("에러 발생: " + xhr.responseText);
+					}
+				});
+			});
+		}
+		
+		function initChart() {
+			// 평년 월별 평균 기온 (예: 서울 기준)
+			const normalTemps = [
+				1.2, 2.8, 7.2, 13.5, 18.6, 22.8, 26.3, 27.1, 23.4, 17.0, 10.1, 3.2
+			];
+
+			// 2025년 실제 관측 기온 (샘플 데이터)
+			const temps2025 = [
+				0.4, 3.1, 8.3, 14.2, 19.1, 24.3, 27.5, 28.2, 24.0, 18.4, 11.3, 4.1
+			];
+		
+			Highcharts.chart('result', {
+				chart: {
+					type: 'line'
+				},
+				title: {
+					text: '평년 vs 2025년 월별 평균 기온'
+				},
+				xAxis: {
+					categories: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+					title: { text: '월' }
+				},
+				yAxis: {
+					title: {
+						text: '기온 (℃)'
+					}
+				},
+				tooltip: {
+					shared: true,
+					valueSuffix: '℃'
+				},
+				series: [
+					{
+						name: '평년 기온',
+						data: normalTemps,
+						color: '#7cb5ec'
+					},
+					{
+						name: '2025년 기온',
+						data: temps2025,
+						color: '#f45b5b'
+					}
+				]
+			});
+		}
+		</script>
+	</head>
+	
+	<body>
+		<h2>도시별 날씨 정보</h2>
+		<label for="citySelect">도시 선택:</label>
+		<select id="citySelect" style="width:100px">
+			<option value="126.9816417,37.57037778">서울</option>
+			<option value="-73.990494,40.7569545">뉴욕</option>
+			<option value="2.3522219,48.856614">파리</option>
+			<option value="127.0286009,37.2635727">수원</option>
+		</select>
+		
+		<button id="searchBtn">조회</button>
+
+		<div id="result"></div>		
+	</body>
+</html>
